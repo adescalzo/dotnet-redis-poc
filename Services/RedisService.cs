@@ -1,5 +1,6 @@
 using StackExchange.Redis;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace RedisPoC.Services;
 
@@ -19,6 +20,18 @@ public class RedisService : IRedisService
         _logger = logger;
     }
 
+    /// <summary>
+    /// Sanitize user input for logging to prevent log forging attacks
+    /// </summary>
+    private static string SanitizeForLog(string? input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return string.Empty;
+        
+        // Remove newlines and carriage returns to prevent log forging
+        return Regex.Replace(input, @"[\r\n]", "");
+    }
+
     #region String Operations (Key-Value Cache)
 
     public async Task<bool> SetStringAsync(string key, string value, TimeSpan? expiry = null)
@@ -29,7 +42,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error setting string key: {Key}", key);
+            _logger.LogError(ex, "Error setting string key: {Key}", SanitizeForLog(key));
             throw;
         }
     }
@@ -43,7 +56,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting string key: {Key}", key);
+            _logger.LogError(ex, "Error getting string key: {Key}", SanitizeForLog(key));
             throw;
         }
     }
@@ -56,7 +69,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting key: {Key}", key);
+            _logger.LogError(ex, "Error deleting key: {Key}", SanitizeForLog(key));
             throw;
         }
     }
@@ -69,7 +82,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error checking key existence: {Key}", key);
+            _logger.LogError(ex, "Error checking key existence: {Key}", SanitizeForLog(key));
             throw;
         }
     }
@@ -86,7 +99,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error setting hash field: {Key}.{Field}", key, hashField);
+            _logger.LogError(ex, "Error setting hash field: {Key}.{Field}", SanitizeForLog(key), SanitizeForLog(hashField));
             throw;
         }
     }
@@ -100,7 +113,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting hash field: {Key}.{Field}", key, hashField);
+            _logger.LogError(ex, "Error getting hash field: {Key}.{Field}", SanitizeForLog(key), SanitizeForLog(hashField));
             throw;
         }
     }
@@ -117,7 +130,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting all hash fields: {Key}", key);
+            _logger.LogError(ex, "Error getting all hash fields: {Key}", SanitizeForLog(key));
             throw;
         }
     }
@@ -130,7 +143,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting hash field: {Key}.{Field}", key, hashField);
+            _logger.LogError(ex, "Error deleting hash field: {Key}.{Field}", SanitizeForLog(key), SanitizeForLog(hashField));
             throw;
         }
     }
@@ -149,7 +162,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error pushing to list: {Key}", key);
+            _logger.LogError(ex, "Error pushing to list: {Key}", SanitizeForLog(key));
             throw;
         }
     }
@@ -165,7 +178,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error popping from list: {Key}", key);
+            _logger.LogError(ex, "Error popping from list: {Key}", SanitizeForLog(key));
             throw;
         }
     }
@@ -179,7 +192,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting list range: {Key}", key);
+            _logger.LogError(ex, "Error getting list range: {Key}", SanitizeForLog(key));
             throw;
         }
     }
@@ -192,7 +205,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting list length: {Key}", key);
+            _logger.LogError(ex, "Error getting list length: {Key}", SanitizeForLog(key));
             throw;
         }
     }
@@ -209,7 +222,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error adding to set: {Key}", key);
+            _logger.LogError(ex, "Error adding to set: {Key}", SanitizeForLog(key));
             throw;
         }
     }
@@ -222,7 +235,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error removing from set: {Key}", key);
+            _logger.LogError(ex, "Error removing from set: {Key}", SanitizeForLog(key));
             throw;
         }
     }
@@ -235,7 +248,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error checking set membership: {Key}", key);
+            _logger.LogError(ex, "Error checking set membership: {Key}", SanitizeForLog(key));
             throw;
         }
     }
@@ -249,7 +262,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting set members: {Key}", key);
+            _logger.LogError(ex, "Error getting set members: {Key}", SanitizeForLog(key));
             throw;
         }
     }
@@ -266,7 +279,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error adding to sorted set: {Key}", key);
+            _logger.LogError(ex, "Error adding to sorted set: {Key}", SanitizeForLog(key));
             throw;
         }
     }
@@ -282,7 +295,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting sorted set range: {Key}", key);
+            _logger.LogError(ex, "Error getting sorted set range: {Key}", SanitizeForLog(key));
             throw;
         }
     }
@@ -296,7 +309,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting rank: {Key}.{Member}", key, member);
+            _logger.LogError(ex, "Error getting rank: {Key}.{Member}", SanitizeForLog(key), SanitizeForLog(member));
             throw;
         }
     }
@@ -309,7 +322,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting score: {Key}.{Member}", key, member);
+            _logger.LogError(ex, "Error getting score: {Key}.{Member}", SanitizeForLog(key), SanitizeForLog(member));
             throw;
         }
     }
@@ -324,11 +337,11 @@ public class RedisService : IRedisService
         {
             var subscriber = _redis.GetSubscriber();
             await subscriber.PublishAsync(RedisChannel.Literal(channel), message);
-            _logger.LogInformation("Published message to channel {Channel}", channel);
+            _logger.LogInformation("Published message to channel {Channel}", SanitizeForLog(channel));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error publishing message to channel: {Channel}", channel);
+            _logger.LogError(ex, "Error publishing message to channel: {Channel}", SanitizeForLog(channel));
             throw;
         }
     }
@@ -342,11 +355,11 @@ public class RedisService : IRedisService
             {
                 messageHandler(message.ToString());
             });
-            _logger.LogInformation("Subscribed to channel {Channel}", channel);
+            _logger.LogInformation("Subscribed to channel {Channel}", SanitizeForLog(channel));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error subscribing to channel: {Channel}", channel);
+            _logger.LogError(ex, "Error subscribing to channel: {Channel}", SanitizeForLog(channel));
             throw;
         }
     }
@@ -364,7 +377,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error acquiring lock: {Resource}", resource);
+            _logger.LogError(ex, "Error acquiring lock: {Resource}", SanitizeForLog(resource));
             throw;
         }
     }
@@ -386,7 +399,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error releasing lock: {Resource}", resource);
+            _logger.LogError(ex, "Error releasing lock: {Resource}", SanitizeForLog(resource));
             throw;
         }
     }
@@ -403,7 +416,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error incrementing key: {Key}", key);
+            _logger.LogError(ex, "Error incrementing key: {Key}", SanitizeForLog(key));
             throw;
         }
     }
@@ -416,7 +429,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error decrementing key: {Key}", key);
+            _logger.LogError(ex, "Error decrementing key: {Key}", SanitizeForLog(key));
             throw;
         }
     }
@@ -429,7 +442,7 @@ public class RedisService : IRedisService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting TTL for key: {Key}", key);
+            _logger.LogError(ex, "Error getting TTL for key: {Key}", SanitizeForLog(key));
             throw;
         }
     }

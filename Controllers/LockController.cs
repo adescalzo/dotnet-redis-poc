@@ -87,7 +87,7 @@ public class LockController : ControllerBase
             }
             
             // Simulate some work
-            _logger.LogInformation("Executing critical section for resource: {Resource}", resource);
+            _logger.LogInformation("Executing critical section for resource: {Resource}", System.Text.RegularExpressions.Regex.Replace(resource, @"[\r\n]", ""));
             await Task.Delay(2000); // Simulate 2 seconds of work
             
             // Increment a counter to show the work was done
