@@ -34,12 +34,19 @@ src/
 
 ### 1. Start Redis
 
-Using Docker:
+Docker (single container):
 ```bash
 docker run -d -p 6379:6379 --name redis redis:latest
 ```
 
-Or use your local Redis installation.
+Docker Compose (project aware):
+```bash
+docker compose -f docker-compose.redis.yml up -d
+```
+
+The Compose stack uses the project name `dotnet-redis-poc` and labels each container with `com.dotnet-redis.project=backend` so it is easy to spot alongside other services. Stop it with `docker compose -f docker-compose.redis.yml down` when you are done.
+
+You can also use a local Redis installation if preferred.
 
 ### 2. Run the Backend
 

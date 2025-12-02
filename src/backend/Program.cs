@@ -1,5 +1,4 @@
 using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.RateLimiting;
 using RedisApp.Api.Endpoints;
 using RedisApp.Api.Hubs;
 using RedisApp.Api.Services;
@@ -26,8 +25,7 @@ builder.Services.AddProblemDetails(options =>
 
 // Redis connection
 var redisConnectionString = builder.Configuration.GetValue<string>("Redis:ConnectionString") ?? "localhost:6379";
-builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
-    ConnectionMultiplexer.Connect(redisConnectionString));
+builder.Services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisConnectionString));
 
 // Hybrid caching with Redis as L2 cache
 builder.Services.AddStackExchangeRedisCache(options =>
@@ -142,4 +140,4 @@ app.MapHub<NotificationHub>("/hubs/notifications");
 app.Run();
 
 // Make Program class accessible for integration tests
-public partial class Program { }
+// public partial class Program { }

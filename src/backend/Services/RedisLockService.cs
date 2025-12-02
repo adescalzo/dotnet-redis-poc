@@ -2,23 +2,14 @@ using StackExchange.Redis;
 
 namespace RedisApp.Api.Services;
 
-public class RedisLockService
+public class RedisLockService(IConnectionMultiplexer redis, ILogger<RedisLockService> logger)
 {
-    private readonly IConnectionMultiplexer _redis;
-    private readonly ILogger<RedisLockService> _logger;
-
-    public RedisLockService(IConnectionMultiplexer redis, ILogger<RedisLockService> logger)
-    {
-        _redis = redis;
-        _logger = logger;
-    }
-
     public async Task<(bool acquired, string? lockValue)> TryAcquireLockAsync(
         string lockKey,
         TimeSpan expiry,
         CancellationToken ct = default)
     {
-        var db = _redis.GetDatabase();
+        var db = redis.GetDatabase();
         var lockValue = Guid.NewGuid().ToString();
 
         var acquired = await db.StringSetAsync(
@@ -29,11 +20,11 @@ public class RedisLockService
 
         if (acquired)
         {
-            _logger.LogInformation("Lock acquired: {LockKey} with value {LockValue}", lockKey, lockValue);
+            logger.LogInformation("Lock acquired: {LockKey} with value {LockValue}", lockKey, lockValue);
         }
         else
         {
-            _logger.LogWarning("Failed to acquire lock: {LockKey}", lockKey);
+            logger.LogWarning("Failed to acquire lock: {LockKey}", lockKey);
         }
 
         return (acquired, acquired ? lockValue : null);
@@ -41,7 +32,7 @@ public class RedisLockService
 
     public async Task ReleaseLockAsync(string lockKey, string lockValue)
     {
-        var db = _redis.GetDatabase();
+        var db = redis.GetDatabase();
 
         // Only release the lock if we own it (compare the value)
         const string luaScript = """
@@ -56,17 +47,17 @@ public class RedisLockService
 
         if ((int)result == 1)
         {
-            _logger.LogInformation("Lock released: {LockKey}", lockKey);
+            logger.LogInformation("Lock released: {LockKey}", lockKey);
         }
         else
         {
-            _logger.LogWarning("Failed to release lock (not owner or expired): {LockKey}", lockKey);
+            logger.LogWarning("Failed to release lock (not owner or expired): {LockKey}", lockKey);
         }
     }
 
     public async Task<TimeSpan?> GetLockTtlAsync(string lockKey)
     {
-        var db = _redis.GetDatabase();
+        var db = redis.GetDatabase();
         var ttl = await db.KeyTimeToLiveAsync(lockKey);
         return ttl;
     }
